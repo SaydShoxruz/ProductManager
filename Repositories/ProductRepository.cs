@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using ProductManager.Context;
+using ProductManager.Models;
 
-namespace ProductManager.Repositories
+namespace ProductManager.Repositories;
+
+public class ProductRepository : Repository<Product>, IProductRepository
 {
-    internal class ProductRepository
+    private readonly AppDbContext _appDbContext;
+    public ProductRepository(AppDbContext appDbContext) : base(appDbContext)
     {
+        _appDbContext = appDbContext;
     }
 }

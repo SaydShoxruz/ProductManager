@@ -1,6 +1,7 @@
-﻿namespace ProductManager.Repositories
+﻿using ProductManager.Models;
+
+namespace ProductManager.Repositories;
+
+public interface IProductRepository : IRepository<Product>
 {
-    internal interface IProductRepository
-    {
-    }
 }

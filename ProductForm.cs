@@ -1,4 +1,7 @@
-﻿using ProductManager.Models;
+﻿using ProductManager.Context;
+using ProductManager.Models;
+using ProductManager.Repositories;
+using ProductManager.Services;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -13,11 +16,15 @@ namespace ProductManager
 {
     public partial class ProductForm : Form
     {
+        public readonly AppService _appService;
         public Product Product { get; set; }
 
         public ProductForm(Product product)
         {
             InitializeComponent();
+
+            AppDbContext appDbContext = new AppDbContext();
+            _appService = new AppService(new ProductRepository(appDbContext));
 
             if (product != null)
             {
@@ -30,9 +37,12 @@ namespace ProductManager
         public ProductForm()
         {
             InitializeComponent();
+
+            AppDbContext appDbContext = new AppDbContext();
+            _appService = new AppService(new ProductRepository(appDbContext));
         }
 
-        private void buttonAddOrUpdate_Click(object sender, EventArgs e)
+        private async void buttonAddOrUpdate_Click(object sender, EventArgs e)
         {
             if (string.IsNullOrEmpty(textBoxProductName.Text) ||
                 string.IsNullOrEmpty(textBoxProductDescription.Text) ||
@@ -42,6 +52,12 @@ namespace ProductManager
                 MessageBox.Show("Пожалуйста, заполните все боксы верно!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+
+            if (await ProductUniquenessCheck(textBoxProductName.Text))
+            {
+                return;
+            }
+
             if (Product == null)
             {
                 Product = new Product
@@ -66,6 +82,23 @@ namespace ProductManager
         {
             this.DialogResult = DialogResult.Cancel;
             this.Close();
+        }
+
+        private async Task<bool> ProductUniquenessCheck(String name)
+        {
+            var products = (await _appService.GetAllProductsAsync()).ToList();
+
+            for (int i = 0; i < products.Count(); i++)
+            {
+                if (products[i].Name.ToLower() == name.ToLower())
+                {
+                    MessageBox.Show("Продукт с таким именем уже существует!", "Ошибка", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }
